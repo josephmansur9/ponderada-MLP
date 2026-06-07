@@ -13,6 +13,6 @@ def cross_entropy_gradient(y_pred, y_true):
     # cria uma cópia das previsões para não mudar os dados originais
     grad = y_pred.copy()  
     # multiplica o valor da classe verdadeira por 1
-    grad[np.arange(n), y_true] *= -1 
+    grad[np.arange(n), y_true] -= 1 
     # retorna a matriz com o gradiente calculado para cada amostra
     return grad
