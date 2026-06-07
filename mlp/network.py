@@ -68,7 +68,8 @@ class MLP:
                 dZ = dA
             else:
                 # aplica o produto matricial depois da regra da cadeia, onde cada elemento de dA é multiplicado pela derivada da ReLU
-                dZ = dA @ relu_derivative(Z)
+                #correção: faz a multiplicação de elementwise para garantir que o gradiente agora leve em consideração os neurônios que estavam ativos (Z > 0) e os que não estavam (Z <= 0), já que a ReLU zera os gradientes dos neurônios inativos, o que é crucial para o processo de backpropagation.
+                dZ = dA * relu_derivative(Z)
 
             # essa parte descobre a culpa dos pesos multiplicando o sinal que entrou (A_prev) pelo erro que saiu (dZ), se a entrada foi grande e o erro foi grande, o peso precisa mudar muito
             dWs[i] = A_prev.T @ dZ
