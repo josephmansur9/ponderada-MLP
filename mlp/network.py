@@ -80,3 +80,69 @@ class MLP:
             dA = dZ @ self.weights[i].T
 
         return dWs, dbs
+    
+    # essa função passa por todas as camadas aplicando a correção calculada no backward
+    def update_weights(self, dWs, dbs):
+         # esse loop atualiza os pesos e os biases multiplicando o gradiente pela taxa de aprendizado
+        for i in range(len(self.weights)):
+            # a atualização é feita subtraindo o produto do gradiente pela taxa de aprendizado dos pesos e vieses atuais. Isso muda os pesos na direção que reduz a perda, com o tamanho desses passo controlado pela taxa de aprendizado.
+            self.weights[i] -= self.lr * dWs[i]
+            self.biases[i]  -= self.lr * dbs[i]
+
+    # função de treinamento que recebe os dados de treino, o número de épocas, o tamanho do batch e se deve mostrar o progresso ou não. Ela basicamente retorna um histórico da evolução da perda e da acurácia ao longo das épocas.
+    def train(self, X_train, y_train, epochs=10, batch_size=64, verbose=True):
+        # esse dicionário serve para guardar o histórico de evolução da perda (loss) e da acurácia (acc)
+        history = {'loss': [], 'acc': []}
+        # n armazena o número total de exemplos (imagens/amostras) no conjunto de treino
+        n = X_train.shape[0]
+
+        # esse loop principal define quantas vezes a rede vai olhar para todo o conjunto de dados (épocas)
+        for epoch in range(epochs):
+            # essa parte embaralha os índices das amostras para que a rede não vicie na ordem dos dados e aprenda de forma mais geral. O np.random.permutation(n) gera uma permutação aleatória dos índices de 0 a n-1.
+            idx = np.random.permutation(n)
+            # os dados de entrada (X_train) e as classes verdadeiras (y_train) são embaralhados usando os índices gerados, garantindo que cada época veja os dados em uma ordem diferente, o que pode ajudar a melhorar a generalização da rede.
+            X_shuffled, y_shuffled = X_train[idx], y_train[idx]
+            # essas variaveis são usadas para acumular a perda total da época e contar os batches processados para depois calcular a média por batch
+            epoch_loss, n_batches = 0, 0
+
+            # essa parte divide os dados embaralhados em pequenos blocos (mini-batches) do tamanho do batch_size
+            for start in range(0, n, batch_size):
+                # recorta o bloco atual de entradas e de respostas corretas e guarda em X_b e y_b, respectivamente. O start é o índice inicial do bloco, e start + batch_size é o índice final (não inclusivo), garantindo que cada bloco tenha o número correto de amostras, com possível exceção do último bloco, que pode ser menor se n não for divisível por batch_size.
+                X_b = X_shuffled[start : start + batch_size]
+                y_b = y_shuffled[start : start + batch_size]
+
+                # Primeiro é feito o forward pass, ele faz as previsões para o bloco atual e guarda o histórico no cache
+                y_pred, cache = self.forward(X_b)
+                # depois é calculado o erro desse bloco comparando a previsão com a resposta real
+                loss = cross_entropy_loss(y_pred, y_b)
+                # depois é feito a retropropagação, onde é calculado os gradientes (culpas) de trás para frente
+                dWs, dbs = self.backward(cache, y_b)
+                # por ultimo os pesos e biases são ajustados usando os gradientes calculados
+                self.update_weights(dWs, dbs)
+
+                # Acumula o erro do bloco e conta mais um batch processado
+                epoch_loss += loss
+                n_batches += 1
+
+            # aqui é calculado a média de erro da época dividindo a perda total pelo número de blocos
+            avg_loss = epoch_loss / n_batches
+            # avalia a acurácia (porcentagem de acertos) da rede com os pesos atuais
+            acc = self.evaluate(X_train, y_train)
+            # o histórico salva os resultados desta época no histórico
+            history['loss'].append(avg_loss)
+            history['acc'].append(acc)
+
+            # na condição if, se verbose for True, mostra na tela o progresso e o desempenho atual da rede
+            if verbose:
+                print(f"Época {epoch+1}/{epochs} — loss: {avg_loss:.4f} — acc: {acc:.4f}")
+        return history
+
+    def predict(self, X):
+        # faz o forward pass para pegar as probabilidades de cada classe
+        y_pred, _ = self.forward(X)
+        # retorna o índice da coluna que teve a maior probabilidade (que é a previsão final da rede)
+        return np.argmax(y_pred, axis=1)
+
+    def evaluate(self, X, y_true):
+        # compara a previsão da rede com a classe real e calcula a média de acertos (de 0.0 a 1.0)
+        return np.mean(self.predict(X) == y_true)
