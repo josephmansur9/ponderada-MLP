@@ -5,6 +5,7 @@ def cross_entropy_loss(y_pred, y_true):
     # para o valor de log não dar -inf, o minimo é limitado com um valor pequeno (1e-12)
     log_probs = np.log(np.clip(y_pred, 1e-12, 1.0))
     # vai linha por linha, pega os valores logaritmicos das classes verdadeiras e soma tudo. Inverte o sinal do log tambem porque queremos minimizar o loss, depois dvidimos por n para ter a média da loss por amostra
+    # correção: divido por n para ter a média da loss por amostra, ao invés de uma soma acumulada que pode crescer muito e ser difícil de interpretar
     return -np.sum(log_probs[np.arange(n), y_true]) / n
 
 def cross_entropy_gradient(y_pred, y_true):
@@ -15,5 +16,5 @@ def cross_entropy_gradient(y_pred, y_true):
     # multiplica o valor da classe verdadeira por 1
     grad[np.arange(n), y_true] -= 1 
     # retorna a matriz com o gradiente calculado para cada amostra
-    #divide por n para o gradiente ser uma média e não uma soma acumulada
+    # correção: divide por n para o gradiente ser uma média e não uma soma acumulada
     return grad /n

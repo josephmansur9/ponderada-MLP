@@ -8,7 +8,9 @@ class SGD:
         # Passa por cada camada da rede usando o índice 'i'
         for i in range(len(weights)):
             # Subtrai o gradiente diretamente do peso
-            weights[i] -= dWs[i]
+            # Correção: multiplica os pesos pelos valores da taxa de aprendizado para não haver uma atualização muito grande que pode levar a divergência
+            weights[i] -= self.lr * dWs[i]
             
             # Subtrai o gradiente diretamente do viés
-            biases[i] -= dbs[i]
+            # Correção: multiplica os vieses pelos valores da taxa de aprendizado para não haver uma atualização muito grande que pode levar a divergência
+            biases[i] -= self.lr * dbs[i]
