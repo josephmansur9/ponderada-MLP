@@ -1,4 +1,0 @@
-config,arquitetura,lr,acc treino,acc teste,loss final
-baseline,"[784, 128, 64, 10]",0.1,0.9982,0.9784,0.0115
-rede maior,"[784, 256, 128, 64, 10]",0.1,1.0000,0.9813,0.0017
-lr menor,"[784, 128, 64, 10]",0.01,0.9664,0.9625,0.1242
