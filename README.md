@@ -100,7 +100,7 @@ Os erros mais frequentes foram:
 | 3    | 7        | 11          |
 | 8    | 7        | 11          |
 
-Esses erros não são aleatórios, eles seguem uma lógica visual. O 9 por exemplo é confundido com o 7 (16 vezes), o que faz sentido porque ambos têm uma haste descendente longa. O 7 sendo confundido com 2 (14 vezes) também faz sentido, em algumas caligrafias o 7 tem uma curva no topo que o aproxima do 2. A rede parece errando nos mesmos lugares onde um humano também erraria.
+Esses erros não são aleatórios, eles seguem uma lógica visual. O 9 por exemplo é confundido com o 7 (16 vezes), o que faz sentido porque ambos têm uma haste descendente longa. O 7 sendo confundido com 2 (14 vezes) também faz sentido, em algumas caligrafias o 7 tem uma curva no topo que o aproxima do 2. A rede parece errar nos mesmos lugares onde um humano também erraria.
 
 ### Comparação de configurações
 
@@ -128,14 +128,13 @@ Outro ponto que exigiu atenção foi a estabilidade numérica do Softmax. Na pri
 
 Sobre os shapes do backpropagation:
 
-No forward pass, cada camada calcula Z = A @ W + b. Se esta sendo processado um batch de 64 imagens e a camada vai de 128 para 64 neurônios, então A tem shape (64, 128) e W tem shape (128, 64), o resultado Z tem shape (64, 64).
-No backward é necessário descobrir o gradiente de W, ou seja, o quanto cada peso contribuiu para o erro. A conta é dW = A_prev.T @ dZ. Transpor A_prev transforma (64, 128) em (128, 64), e multiplicar por dZ de shape (64, 64) resulta em (128, 64) — que é exatamente o shape de W. Isso faz sentido: para cada par (entrada, saída), acumulamos o quanto essa conexão contribuiu para o erro em cada exemplo do batch.
+Um ponto interessante foi no forward pass, cada camada calcula Z = A @ W + b. Se esta sendo processado um batch de 64 imagens e a camada vai de 128 para 64 neurônios, então A tem shape (64, 128) e W tem shape (128, 64), o resultado Z tem shape (64, 64). No backward é necessário descobrir o gradiente de W, ou seja, o quanto cada peso contribuiu para o erro. A conta é dW = A_prev.T @ dZ. Inverter A_prev transforma (64, 128) em (128, 64), e multiplicar por dZ de shape (64, 64) resulta em (128, 64), que é o shape de W. Isso faz sentido porque para cada par (entrada, saída), é acumulado o quanto essa conexão contribuiu para o erro em cada exemplo do batch.
 
-Para passar o erro para a camada anterior: dA = dZ @ W.T. Transpor W de (128, 64) para (64, 128), multiplicar por dZ de (64, 64), resulta em (64, 128) — o shape correto para a camada de trás processar. O perigo aqui é que as dimensões às vezes batem por acidente mesmo com a operação errada, então o código não dá erro mas os gradientes estão incorretos. Desenhar esses shapes antes de escrever o código evita esse tipo de bug silencioso.
+Para passar o erro para a camada anterior é utilizado dA = dZ @ W.T. Inverter W de (128, 64) para (64, 128) e multiplicar por dZ de (64, 64), resulta em (64, 128), o shape correto para a camada de trás processar. O problema é que as dimensões às vezes batem por acidente mesmo com a operação errada, então o código não dá erro mas os gradientes estão errados. Desenhar esses shapes antes de escrever o código seria importante para localizar esses bugs.
 
 ### 2. O que tentei que não funcionou?
 
-Pixels sem normalização: Eu eu tinha removido o /255.0 da conta X_train = X_train.reshape(-1, 784).astype(np.float32) / 255.0. A rede tinha travado, onde eu ficava com um loss de ~2.3040 nas 15 épocas com uma acurácia de ~11%, ou seja um chute aleatório em 10 classes. Depois de pesquisar descobri que o valor de 2.3040 não era coincedência, ele é exatamente ln(10), o valor esperado para uma distribuição uniforme sobre 10 classes. O problema era que os pixels em escala de 0-255 produziam ativações grandes nas primeiras camadas, fazendo os gradientes chegarem reduzidos nas camadas anteriores ao ponto dos pesos praticamente não se moverem. A normalizac1ão de [0,1] manteve as ativações em uma escala compatível com a inicialização He e o learning rate.
+Pixels sem normalização: Eu tinha removido o /255.0 da conta: X_train = X_train.reshape(-1, 784).astype(np.float32) / 255.0. A rede tinha travado, onde eu ficava com um loss de ~2.3040 nas 15 épocas com uma acurácia de ~11%, ou seja um chute aleatório em 10 classes. Depois de pesquisar descobri que o valor de 2.3040 não era coincedência, ele é exatamente ln(10), o valor esperado para uma distribuição uniforme sobre 10 classes. O problema era que os pixels em escala de 0-255 produziam ativações grandes nas primeiras camadas, fazendo os gradientes chegarem reduzidos nas camadas anteriores ao ponto dos pesos praticamente não se moverem. A normalizac1ão de [0,1] manteve as ativações em uma escala compatível com a inicialização He e o learning rate.
 
 <div align="center">
   <sub>FIGURE 2 – epoca</sub><br>
