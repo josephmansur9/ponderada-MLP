@@ -76,9 +76,9 @@ A saída usa Softmax combinada com cross-entropy loss. Matematicamente, o gradie
 
 ![Curvas de treinamento](results/training_curves.png)
 
-O gráfico da esquerda mostra a cross-entropy de loss média por época no conjunto de treino. Ela começa em ~0.32 na primeira época e cai até mais ou menos 0.012 na época 15, uma redução de ~96%. A queda é mais acentuada nas primeiras épocas porque os gradientes são maiores quando os pesos ainda estão longe do mínimo, assim, conforme a rede melhora, os ajustes ficam cada vez menores.
+O gráfico da esquerda mostra a cross-entropy de loss média por época no conjunto de treino. Ela começa em ~0.32 na primeira época e cai até mais ou menos 0.012 na época 15, uma redução de ~96%. A queda é mais acentuada nas primeiras épocas porque os gradientes são maiores quando os pesos ainda estão longe do mínimo, assim, conforme a rede melhora, os ajustes ficam cada vez menores. Além disso a queda é mais acentuada nas primeiras épocas porque os gradientes são maiores quando os pesos ainda estão longe do mínimo. A curva tem formato exponencial, não linear. Conforme a rede melhora, os ajustes ficam cada vez menores.
 
-O gráfico da direita mostra a acurácia no conjunto de treino ao longo das épocas. A rede ultrapassa a meta de 92% já na primeira época e termina em ~99.84%.
+O gráfico da direita mostra a acurácia no conjunto de treino ao longo das épocas. A rede ultrapassa a meta de 92% já na primeira época e termina em ~99.84%. O pequeno recuo por volta da época 9 é justificado pela variância natural do embaralhamento aleatório dos batches.
 
 Houve também um pouco de diferença entre treino (~99.84%) e teste (~97.95%) indicando um pouco de overfitting leve mas aceitável, a rede generalizou bem para dados que não tinha visto.
 
@@ -100,7 +100,7 @@ Os erros mais frequentes foram:
 | 3    | 7        | 11          |
 | 8    | 7        | 11          |
 
-Esses erros não são aleatórios, eles seguem uma lógica visual. O 9 por exemplo é confundido com o 7 (16 vezes), o que faz sentido porque ambos têm uma haste descendente longa. O 7 sendo confundido com 2 (14 vezes) também faz sentido, em algumas caligrafias o 7 tem uma curva no topo que o aproxima do 2. A rede parece errar nos mesmos lugares onde um humano também erraria.
+Esses erros não são aleatórios, eles seguem uma lógica visual. O 9 por exemplo é confundido com o 7 (16 vezes), o que faz sentido porque ambos têm uma aparencia parecida. O 7 sendo confundido com 2 (14 vezes) também faz sentido, em algumas caligrafias o 7 tem uma curva no topo que o aproxima do 2. O par 9 e 4 também erra bastante, 27 + 14 = 41 erros combinados. O 5 também tem confusões, sendo classificado como 3 em 15 casos e como 6 em 12, isso porque ele acaba tendo um visual/características geométricas semelhantes com esses numeros. Ou seja, a rede parece errar nos mesmos lugares onde um humano também erraria.
 
 ### Comparação de configurações
 
